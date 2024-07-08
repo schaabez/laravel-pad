@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\DateUtils;
 use App\Services\WorkdayService;
 use Illuminate\Http\Request;
 
@@ -27,7 +28,7 @@ class TaskDurationController extends Controller {
         $workingHourStart = new \DateTime($workingHourStart);
         $workingHourEnd = new \DateTime($workingHourEnd);
 
-        $workingHourRange = self::getWorkingHourRange($workingHourStart, $workingHourEnd);
+        $workingHourRange = DateUtils::getWorkingHourRange($workingHourStart, $workingHourEnd);
 
         $workingDaysOnly = $request->query("workingDaysOnly", FALSE);
 
@@ -37,7 +38,7 @@ class TaskDurationController extends Controller {
             $taskCheck = clone $expectedDuration;
             $taskCheckEnd = clone $workingHourEnd;
             $taskCheckEnd->setDate($taskCheck->format("Y"), $taskCheck->format("m"), $taskCheck->format("d"));
-            $rangeToEnd = self::getWorkingHourRange($taskCheck, $taskCheckEnd);
+            $rangeToEnd = DateUtils::getWorkingHourRange($taskCheck, $taskCheckEnd);
 
             if ($workingDaysOnly && !$this->workdayService->isWorkday($expectedDuration)) {
                 // skip if not a workday
@@ -46,7 +47,7 @@ class TaskDurationController extends Controller {
             }
 
             if ($duration > $workingHourRange) {
-                // add full day of work
+                // if possible, add full day of work, and skip to next day
                 $expectedDuration->modify("+1 day");
                 $duration -= $workingHourRange;
                 continue;
@@ -56,15 +57,13 @@ class TaskDurationController extends Controller {
                 break;
             }
 
-            $workingHourStart->setDate($expectedDuration->format("Y"), $expectedDuration->format("m"),
-                                       $expectedDuration->format("d"));
-            $workingHourEnd->setDate($expectedDuration->format("Y"), $expectedDuration->format("m"),
-                                     $expectedDuration->format("d"));
+            // adjust dates
+            $workingHourStart = DateUtils::setDate($workingHourStart, $expectedDuration);
+            $workingHourEnd = DateUtils::setDate($workingHourEnd, $expectedDuration);
 
 
             if ($workingHourEnd > $expectedDuration) {
-
-                $range = self::getWorkingHourRange($expectedDuration, $workingHourEnd);
+                $range = DateUtils::getWorkingHourRange($expectedDuration, $workingHourEnd);
                 $duration -= $range;
 
                 $expectedDuration->modify("+1 day");
@@ -79,22 +78,6 @@ class TaskDurationController extends Controller {
 
         return response()->json(["expectedDuration" => $expectedDuration->format(\DateTime::ATOM)]);
 
-    }
-
-    private static function getWorkingHourRange(\DateTime $start, \DateTime $end): int {
-        $whDiff = $start->diff($end);
-        $minutes = $whDiff->i + ($whDiff->h * 60) + ($whDiff->s / 60);
-        return $whDiff->invert ? -$minutes : $minutes;
-    }
-
-    private static function setDate(\DateTime $date, \DateTime $time): \DateTime {
-        $date->setDate($time->format("Y"), $time->format("m"), $time->format("d"));
-        return $date;
-    }
-
-    private static function setTime(\DateTime $date, \DateTime $time): \DateTime {
-        $date->setTime($time->format("H"), $time->format("i"), $time->format("s"));
-        return $date;
     }
 
 }

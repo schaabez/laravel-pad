@@ -10,7 +10,7 @@ class WorkdayService {
     private ?string $country     = null;
 
     // Days of the week that are considered workdays
-    // Can be set for each country + can be moved into database
+    // Can be set for each country + can be loaded from database
     private array   $workingDays = [
         "CZE" => [1, 2, 3, 4, 5] // Monday - Friday
     ];
