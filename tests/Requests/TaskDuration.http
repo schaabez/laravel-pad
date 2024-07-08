@@ -1,0 +1,5 @@
+GET http://localhost/php83/notepad/public/api/task-duration/expected-duration
+    ?taskStart=2024-07-02T15:54:00
+    &duration=120
+    &workingHourStart=08:00:00
+    &workingHourEnd=17:00:00
