@@ -27,10 +27,10 @@
 
 - `GET /api/task-duration/expected-duration`
   - QUERY:
-    - *`taskStart` - DateTime in `Y-m-d\TH:i:s`  format
-    - *`duration` - integer, duration in minutes
-    - *`workingHourStart` - Time in `H:i:s` format
-    - *`workingHourEnd` - Time in `H:i:s` format
+    - `taskStart` - DateTime in `Y-m-d\TH:i:s` format, **required**
+    - `duration` - integer, duration in minutes, **required**
+    - `workingHourStart` - Time in `H:i:s` format, **required**
+    - `workingHourEnd` - Time in `H:i:s` format, **required**
     - `workingDaysOnly` - boolean, uses only working days, default `false`
   - Returns
       - type: `json`
