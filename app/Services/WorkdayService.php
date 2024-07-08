@@ -22,18 +22,9 @@ class WorkdayService {
             return false;
         }
 
-        $holiday = Holiday::query()
-            ->where("day", $date->format("d"))
-            ->where("month", $date->format("m"))
-            ->where("country", $this->country)
-            ->where("stateHoliday", true) // Only state holidays are considered
-            ->first();
 
-        if ($holiday) {
-            return false;
-        }
-
-        return true;
+        // if it's a state holiday, it's not a workday
+        return !Holiday::checkStateHoliday($date, $this->country);
     }
 
     final public function setCountry(string $country): self {
